@@ -1,0 +1,154 @@
+#umap
+DimPlot(am25f.testes, reduction = "umap")
+
+#Germ cell biomarkers
+FeaturePlot(am25f.testes, features = c("Ddx4","Sycp1","Uchl1","Sall4",
+                                       "Crabp1","Stra8","Sohlh1","Kit","Prdm9",
+                                       "Pttg1","Insl6","Tex101","Mei1","Sycp3","Hormad1","Piwil1","Piwil2","Tdrd5","H2afx","Spo11","Spag6","Tpbl1","Mns1",
+                                       "Tssk1","Acrv1","Spaca1","Tsga8","Pgk2",
+                                       "Prm1","Prm2","Tnp1","Tnp2","Hspa1l"))
+
+DotPlot(am25f.testes, features = c("Ddx4","Sycp1","Uchl1","Sall4","Lin28a","Lin28b","Dazl",
+                                   "Crabp1","Stra8","Sohlh1","Kit","Prdm9",
+                                   "Dmc1","Pttg1","Insl6","Tex101","Mei1","Sycp3","Hormad1","Piwil1","Piwil2","Tdrd5","H2afx","Spo11","Spag6","Tbpl1","Mns1",
+                                   "Tssk1","Acrv1","Spaca1","Tsga8","Pgk2",
+                                   "Prm1","Prm2","Tnp1","Tnp2","Hspa1l"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#Germ cells
+
+#undifferentiated spermatgonia
+FeaturePlot(am25f.testes, features = c("Uchl1","Sall4","Cdh1","Lin28a","Lin28b","Id4","Gfra1","Zbtb16"))
+
+DotPlot(am25f.testes, features = c("Uchl1","Sall4","Cdh1","Lin28a","Lin28b","Tspan33","Piwil4","Morc1","Tcf3","Cdk17","Mageb2","Fmr1","L1td1","Gfra1","Zbtb16"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#differentiated spermatgonia
+FeaturePlot(am25f.testes, features = c("Stra8","Rhox13","Sohlh3","Kit","Prdm9"))
+
+DotPlot(am25f.testes, features = c("Stra8","Rhox13","Sohlh3","Kit","Prdm9","Dazl","Dmrt1","Mki67"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#spermatocytes
+FeaturePlot(am25f.testes, features = c("Dazl","Sycp3","Mtl5","Nxt1","Shcbp1l","Piwil1","Pttg1","Insl6","Spag6","Tbpl1"))
+
+DotPlot(am25f.testes, features = c("Dazl","Sycp3","Mtl5","Nxt1","Shcbp1l","Piwil1","Pttg1","Insl6","Spag6","Tbpl1",
+                                   "Tex101","Spo11","Mei1","Piwil2","Tdrd5","Hormad1","H2afx","Mns1","Dmc1"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#round spermatids
+FeaturePlot(am25f.testes, features = c("Tssk1","Acrv1","Spaca1","Tsga8","Lyzl1","Hemgn"))
+
+DotPlot(am25f.testes, features = c("Tssk1","Acrv1","Spaca1","Tsga8","Lyzl1","Hemgn","Acr"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#elongated spermatids
+FeaturePlot(am25f.testes, features = c("Prm1","Prm2","Tnp1","Tnp2"))
+
+DotPlot(am25f.testes, features = c("Prm1","Prm2","Tnp1","Tnp2"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+
+
+
+
+
+
+
+#Genes of interest
+FeaturePlot(am25f.testes, features = c("Ddx4","Kit","Lin28a","Lin28b","Gfra1","Thy1",
+                                       "Zbtb16","Id4","Pdx1","Eomes","Neurog3"))
+
+DotPlot(am25f.testes, features = c("Ddx4","Kit","Lin28a","Lin28b","Gfra1","Thy1","Zbtb16","Id4","Pdx1","Eomes","Neurog3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#solo
+FeaturePlot(am25f.testes, features = c("Ddx4"))
+DotPlot(am25f.testes, features = c("Lin28a"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+#Labeling clusters
+new.cluster.ids <- c("Elongating spermatids","Round spermatids","Spermatogonia","Round spermatids",
+                     "Spermatocytes","Elongating spermatids","Round spermatids","Myoid cells","Spermatocytes","Spermatocytes",
+                     "Sertoli cells","Leydig cells","Endothelial cells","Macrophages/Lymphocytes")
+names(new.cluster.ids) <- levels(am25f.testes)
+am25f.testes <- RenameIdents(am25f.testes, new.cluster.ids)
+DimPlot(am25f.testes, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+
+#Labeling clusters
+new.cluster.ids <- c("Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Somatic cells","Germ cells","Germ cells",
+                     "Somatic cells","Somatic cells","Somatic cells","Somatic cells")
+names(new.cluster.ids) <- levels(am25f.testes)
+am25f.testes <- RenameIdents(am25f.testes, new.cluster.ids)
+DimPlot(am25f.testes, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+
+
+
+
+
+## extract meta data
+md <- am25f.testes@meta.data %>% as.data.table
+# the resulting md object has one "row" per cell
+## count the number of cells per unique combinations of "Sample" and "seurat_clusters"
+md[, .N, by = c("orig.ident", "seurat_clusters")]
+## with additional casting after the counting
+md[, .N, by = c("orig.ident", "seurat_clusters")] %>% dcast(., orig.ident ~ seurat_clusters, value.var = "N")
+
+
+
+
+#Create a table with the dot-plot data for a list of genes. 
+#First, I identified the gene list as cd_genes, created a dot-plot, 
+#and then asked to write a table for the feature b
+
+  genes <- c("Ddx4","Kit","Lin28a","Lin28b","Gfra1","Thy1",
+                "Zbtb16","Id4","Pdx1","Eomes","Neurog3")
+
+b <- DotPlot(object = am25f.testes, features = genes)
+
+b$data
+
+write.table(x = b$data, file = "b.csv")
+
+print(b$data)
+
+write.table(b$data, file = "b$data.txt", sep = "\t",
+            row.names = TRUE, col.names = NA)
+
+
+
+
+bgenes <- c("Trpc4","Gabrd","Fzd10","Lppr3")
+
+c <- DotPlot(object = am25f.testes, features = bgenes)
+
+c$data
+
+
+
+#subset and the big experiment 
+the.gene <- subset(x = am25f.testes, subset = Ddx4 > 0)
+the.gene
+DimPlot(the.gene, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+
+
+## extract meta data
+md <- the.gene@meta.data %>% as.data.table
+# the resulting md object has one "row" per cell
+## count the number of cells per unique combinations of "Sample" and "seurat_clusters"
+md[, .N, by = c("orig.ident", "seurat_clusters")]
+## with additional casting after the counting
+md[, .N, by = c("orig.ident", "seurat_clusters")] %>% dcast(., orig.ident ~ seurat_clusters, value.var = "N")
+
+
+
+
+#extra
+FeaturePlot(the.gene, features = c("Ddx4"))
+DotPlot(the.gene, features = c("Ddx4"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+j <- DotPlot(object = the.gene, features = "Ddx4")
+j$data
