@@ -1,0 +1,212 @@
+#load libraries
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(patchwork)
+library(ggplot2)
+library(data.table)
+library(magrittr)
+
+#load data
+am25f.testes.data <- read.delim("GSE112393_MergedAdultMouseST25_DGE.txt.gz", sep = "\t", header=TRUE)
+str(am25f.testes.data)
+#create seurat object
+am25f.testes <- CreateSeuratObject(counts = am25f.testes.data, project = "am25ftestes", min.cells = 3, min.features = 200)
+#view number of features across samples
+am25f.testes
+
+#QC mitochondria (use lower case mt)
+am25f.testes[["percent.mt"]] <- PercentageFeatureSet(am25f.testes, pattern = "^mt-")
+view(am25f.testes@meta.data)
+
+#QC
+VlnPlot(am25f.testes, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+
+#FeatureScatter 
+plot1 <- FeatureScatter(am25f.testes, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(am25f.testes, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+#adjust this step as needed
+am25f.testes <- subset(am25f.testes, subset = nFeature_RNA > 500 & nFeature_RNA < 7500 & percent.mt < 7.5)
+
+#Normalize the data
+am25f.testes <- NormalizeData(am25f.testes, normalization.method = "LogNormalize", scale.factor = 10000)
+am25f.testes <- NormalizeData(am25f.testes)
+
+#Identify highly variable features
+am25f.testes <- FindVariableFeatures(am25f.testes, selection.method = "vst", nfeatures = 2000)
+#top10
+top10 <- head(VariableFeatures(am25f.testes), 10)
+#plot
+plot1 <- VariableFeaturePlot(am25f.testes)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1 + plot2              
+
+#scaling the data
+all.genes <- rownames(am25f.testes)
+am25f.testes <- ScaleData(am25f.testes, features = all.genes)
+
+#Linear dimensional reduction and elbow plot (for dims)
+am25f.testes <- RunPCA(am25f.testes, features = VariableFeatures(object = am25f.testes))
+ElbowPlot(am25f.testes)
+
+
+#CLUSTERING
+am25f.testes <- FindNeighbors(am25f.testes, dims = 1:20)
+am25f.testes <- FindClusters(am25f.testes, resolution = 0.2)
+# Look at cluster IDs of the first 5 cells
+head(Idents(am25f.testes), 5)
+
+
+#Non-linear dimensional reduction and UMAP
+am25f.testes <- RunUMAP(am25f.testes, dims = 1:20)
+#note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
+DimPlot(am25f.testes, reduction = "umap")
+
+
+#Feature Plot for biomarkers and genes of interest
+#Use these biomarkers here
+FeaturePlot(am25f.testes, features = c("Ddx4","Acr","Pgk2","Sox9","Wt1","Rhox8","Cyp17a1",
+                                       "Hsd3b1","Cyp11a1","Star","Lhcgr","Tcf21","Col1a1","Cd74","Cd14","Cd4",
+                                       "Adgre1","Dab2","Ccl5","Il7r","Cd52","Vwf","Pecam1","Ly6c1","Tek","Tie1"))
+#Genes of interest
+FeaturePlot(am25f.testes, features = c("Ddx4","Kit","Lin28a","Lin28b","Gfra1",
+                                       "Thy1","Zbtb16","Id4","Pdx1","Eomes","Neurog3"))
+
+#Dotplots
+#Biomarkers
+DotPlot(am25f.testes, features = c("Ddx4","Acr","Pgk2","Sox9","Wt1","Rhox8","Cyp17a1",
+                                   "Hsd3b1","Cyp11a1","Star","Lhcgr","Tcf21","Col1a1","Cd74","Cd14","Cd4",
+                                   "Adgre1","Dab2","Ccl5","Il7r","Cd52","Vwf","Pecam1","Ly6c1","Tek","Tie1"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Genes of interest
+DotPlot(am25f.testes, features = c("Ddx4","Kit","Lin28a","Lin28b","Gfra1","Thy1","Zbtb16","Id4","Pdx1","Eomes","Neurog3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+
+
+#Heatmap
+DoHeatmap(am25f.testes, features = biomarkers) + 
+            scale_fill_gradientn(colors = c("blue", "red"))
+?DoHeatmap
+biomarkers <- c("Ddx4","Acr","Pgk2","Sox9","Wt1","Rhox8","Cyp17a1",
+                "Hsd3b1","Cyp11a1","Star","Lhcgr","Tcf21","Col1a1","Cd74","Cd14","Cd4",
+                "Adgre1","Dab2","Ccl5","Il7r","Cd52","Vwf","Pecam1","Ly6c1","Tek","Tie1")
+
+
+#Labeling clusters
+new.cluster.ids <- c("Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Germ cells","Myoid cells","Germ cells","Germ cells",
+                     "Sertoli cells","Leydig cells","Endothelial cells","Macrophages/Lymphocytes")
+names(new.cluster.ids) <- levels(am25f.testes)
+am25f.testes <- RenameIdents(am25f.testes, new.cluster.ids)
+DimPlot(am25f.testes, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+
+
+
+
+#Brietta genes
+FeaturePlot(am25f.testes, features = c("Trpc4","Gabrd","Fzd10","Lppr3")) 
+DotPlot(am25f.testes, features = c("Trpc4","Gabrd","Fzd10","Lppr3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#Germ cell genes
+DotPlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
+                                   "Shcbp1l","Lyzl1","Acrv1","Hemgn","Txndc8","Tssk6","Oaz3","Prm1","Prm2"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+FeaturePlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
+                                       "Shcbp1l","Lyzl1","Acrv1","Hemgn","Txndc8","Tssk6","Oaz3","Prm1","Prm2"))
+
+
+
+
+
+
+
+
+
+#Sertoli cells
+FeaturePlot(am25f.testes, features = c("Amh","Fshr","Gata9","Sox9","Ptgds","Adgra3","Wt1","Clu","Amhr2","Ctsl","Rhox8"))
+DotPlot(am25f.testes, features = c("Amh","Fshr","Gata9","Sox9","Ptgds","Adgra3","Wt1","Clu","Amhr2","Ctsl","Rhox8"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Leydig cells
+FeaturePlot(am25f.testes, features = c("Lhcgr","Hsd3b1","Cyp17a1","Dlk1","Cyp11a1","Star"))
+DotPlot(am25f.testes, features = c("Lhcgr","Hsd3b1","Cyp17a1","Dlk1","Cyp11a1","Star"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Myoid cells
+FeaturePlot(am25f.testes, features = c("Acta2","Tcf21","Col1a1","Myh11","Myl6","Pdgfrb"))
+DotPlot(am25f.testes, features = c("Acta2","Tcf21","Col1a1","Myh11","Myl6","Pdgfrb"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Macrophages
+FeaturePlot(am25f.testes, features = c("Aif1","Cd74","Cd4","Cd14","Adgre1","Apoe","Dab2"))
+DotPlot(am25f.testes, features = c("Aif1","Cd74","Cd4","Cd14","Adgre1","Apoe","Dab2"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Lymphocytes
+FeaturePlot(am25f.testes, features = c("Il7r","Ccl5","Id2","Rora","Cd52"))
+DotPlot(am25f.testes, features = c("Il7r","Ccl5","Id2","Rora","Cd52"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Endothelial cells
+FeaturePlot(am25f.testes, features = c("Vwf","Pecam1","Laptm5","Ptprc","Vcam1","Insl3","Lyz2","Hbb-bt","Vwf","Tie1","Tek","Ly6c1"))
+DotPlot(am25f.testes, features = c("Vwf","Pecam1","Laptm5","Ptprc","Vcam1","Insl3","Lyz2","Hbb-bt","Tie1","Tek","Ly6c1"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Somatic cells
+FeaturePlot(am25f.testes, features = c("Vim","Nr2f2"))
+#Germ cells +
+FeaturePlot(am25f.testes, features = c("Dazl","Ddx4","Uchl1","Etv5"))
+
+
+
+
+
+
+
+#Biomarkers
+FeaturePlot(am25f.testes, features = c("Sox9","Fshr","Lhcgr","Ddx4","Ccl5","Aif1","Acta2"))
+#More biomarkers
+FeaturePlot(am25f.testes, features = c("Ddx4","Sox9","Cyp17a1","Tcf21","Aif1","Ccl5"))
+#Genes of interest
+FeaturePlot(am25f.testes, features = c("Gfra1","Thy1","Zbtb16","Id4","Pdx1","Eomes","Neurog3"))
+#Germ cell genes
+FeaturePlot(am25f.testes, features = c("Id4","Gfra1","Zbtb16","Stra8","Rhox13","Sycp3","Dmc1",
+                                       "Piwil1","Pgk2","Acr","Gapdhs","Prm1","Ddx4"))
+#Good biomarkers I think
+FeaturePlot(am25f.testes, features = c("Sox9","Cyp17a1","Dlk1","Acta2","Aif1","Ccl5","Vwf","Vim","Ddx4","Dazl"))
+
+
+#Dotplot
+#Biomarkers
+DotPlot(am25f.testes, features = c("Sox9","Fshr","Lhcgr","Ddx4","Ccl5","Aif1","Acta2"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#More biomarkers 
+DotPlot(am25f.testes, features = c("Ddx4","Sox9","Cyp17a1","Tcf21","Aif1","Ccl5"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Genes of interest 
+DotPlot(am25f.testes, features = c("Gfra1","Thy1","Zbtb16","Id4","Pdx1","Eomes","Neurog3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Germ cell genes
+DotPlot(am25f.testes, features = c("Id4","Gfra1","Zbtb16","Stra8","Rhox13","Sycp3","Dmc1",
+                                  "Piwil1","Pgk2","Acr","Gapdhs","Prm1","Ddx4","Aif1"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Even more biomarkers
+DotPlot(am25f.testes, features = c("Sox9","Cyp17a1","Dlk1","Acta2","Aif1","Ccl5","Vwf","Vim","Ddx4","Dazl"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+#Germ cell +
+DotPlot(am25f.testes, features = c("Dazl","Ddx4","Uchl1","Etv5"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+
+
+#Germ cell genes
+DotPlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
+                                   "Shcbp1l","Lyzl1","Acrv1","Hemgn","Txndc8","Tssk6","Oaz3","Prm1","Prm2"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+FeaturePlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
+                                       "Shcbp1l","Lyzl1","Acrv1","Hemgn","Txndc8","Tssk6","Oaz3","Prm1","Prm2"))
+
+
+
+#Heatmap
+DimHeatmap(am25f.testes, dims = 1, cells = 500, balanced = TRUE)
+DimHeatmap(am25f.testes, dims = 1:15, cells = 500, balanced = TRUE)
+
