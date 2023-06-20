@@ -1,3 +1,5 @@
+#this code here is for generating all the main data
+
 #load libraries
 library(Seurat)
 library(tidyverse)
@@ -6,6 +8,7 @@ library(patchwork)
 library(ggplot2)
 library(data.table)
 library(magrittr)
+library(Matrix)
 
 #load data
 am25f.testes.data <- read.delim("GSE112393_MergedAdultMouseST25_DGE.txt.gz", sep = "\t", header=TRUE)
@@ -53,7 +56,7 @@ ElbowPlot(am25f.testes)
 
 #CLUSTERING
 am25f.testes <- FindNeighbors(am25f.testes, dims = 1:20)
-am25f.testes <- FindClusters(am25f.testes, resolution = 0.2)
+am25f.testes <- FindClusters(am25f.testes, resolution = 0.2) #change this to 0.7 if you want more clusters
 # Look at cluster IDs of the first 5 cells
 head(Idents(am25f.testes), 5)
 
@@ -86,13 +89,7 @@ DotPlot(am25f.testes, features = c("Ddx4","Kit","Lin28a","Lin28b","Gfra1","Thy1"
 
 
 
-#Heatmap
-DoHeatmap(am25f.testes, features = biomarkers) + 
-            scale_fill_gradientn(colors = c("blue", "red"))
-?DoHeatmap
-biomarkers <- c("Ddx4","Acr","Pgk2","Sox9","Wt1","Rhox8","Cyp17a1",
-                "Hsd3b1","Cyp11a1","Star","Lhcgr","Tcf21","Col1a1","Cd74","Cd14","Cd4",
-                "Adgre1","Dab2","Ccl5","Il7r","Cd52","Vwf","Pecam1","Ly6c1","Tek","Tie1")
+
 
 
 #Labeling clusters
@@ -105,10 +102,21 @@ DimPlot(am25f.testes, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegen
 
 
 
+
+
+#everything below is just extra stuff I was tinkering with but can be ignored
+
 #Brietta genes
 FeaturePlot(am25f.testes, features = c("Trpc4","Gabrd","Fzd10","Lppr3")) 
 DotPlot(am25f.testes, features = c("Trpc4","Gabrd","Fzd10","Lppr3"), cols = c("blue", "red"), 
         dot.scale = 8) + RotatedAxis()
+
+
+
+
+
+
+
 
 #Germ cell genes
 DotPlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
@@ -116,13 +124,6 @@ DotPlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","
         dot.scale = 8) + RotatedAxis()
 FeaturePlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl5","Nxt1",
                                        "Shcbp1l","Lyzl1","Acrv1","Hemgn","Txndc8","Tssk6","Oaz3","Prm1","Prm2"))
-
-
-
-
-
-
-
 
 
 #Sertoli cells
@@ -209,4 +210,13 @@ FeaturePlot(am25f.testes, features = c("Sall4","Dmrt1","Dazl","Kit","Sycp3","Mtl
 #Heatmap
 DimHeatmap(am25f.testes, dims = 1, cells = 500, balanced = TRUE)
 DimHeatmap(am25f.testes, dims = 1:15, cells = 500, balanced = TRUE)
+
+
+#Heatmap
+DoHeatmap(am25f.testes, features = biomarkers) + 
+  scale_fill_gradientn(colors = c("blue", "red"))
+?DoHeatmap
+biomarkers <- c("Ddx4","Acr","Pgk2","Sox9","Wt1","Rhox8","Cyp17a1",
+                "Hsd3b1","Cyp11a1","Star","Lhcgr","Tcf21","Col1a1","Cd74","Cd14","Cd4",
+                "Adgre1","Dab2","Ccl5","Il7r","Cd52","Vwf","Pecam1","Ly6c1","Tek","Tie1")
 
