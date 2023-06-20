@@ -1,0 +1,65 @@
+#this code was trying to divide undifferentiated and differentiated spermatogonia but it did not work
+
+#spermatoginia
+FeaturePlot(am25f.testes, features = c("Zbtb16","Uchl1","Sall4","Sohlh1","Kit","Stra8","Prdm9"))
+
+DotPlot(am25f.testes, features = c("Id4","Gfra1","Zbtb16","Uchl1","Sall4","Sohlh1","Kit","Stra8","Prdm9","Rhox13","Sycp3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#SSC1
+DotPlot(am25f.testes, features = c("Celf4","Egr4","Fgfr3","Fsd1","Lppr3","Piwil4","Tspan33"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+
+
+
+DimPlot(am25f.testes, reduction = "umap")
+
+#Labeling clusters
+new.cluster.ids <- c("Germ","Undif/Dif Spg 1","Germ","Germ","Myoid","Germ","Germ","Germ","Germ","Germ","Germ","Germ","Germ","Germ","Sertoli","Germ","Germ","Sertoli","Undif/Dif Spg 2","Leydig","Endothelial","Macrophage/Lymphocyte")
+names(new.cluster.ids) <- levels(am25f.testes)
+am25f.testes <- RenameIdents(am25f.testes, new.cluster.ids)
+DimPlot(am25f.testes, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+
+
+DotPlot(am25f.testes, features = c("Sycp1","Uchl1","Sall4","Lin28a","Lin28b","Dazl","Id4","Gfra1","Zbtb16",
+                                   "Crabp1","Stra8","Sohlh1","Kit","Prdm9","Sox3","Rhox13"
+                                   ), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+#undifferentiated spermatgonia
+FeaturePlot(am25f.testes, features = c("Uchl1","Sall4","Cdh1","Lin28a","Lin28b","Id4","Gfra1","Zbtb16"))
+
+DotPlot(am25f.testes, features = c("Uchl1","Sall4","Cdh1","Lin28a","Lin28b","Tspan33","Piwil4","Morc1","Tcf3","Cdk17","Mageb2","Fmr1","L1td1","Gfra1","Zbtb16"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#differentiated spermatgonia
+FeaturePlot(am25f.testes, features = c("Stra8","Rhox13","Sohlh3","Kit","Prdm9"))
+
+DotPlot(am25f.testes, features = c("Stra8","Rhox13","Sohlh3","Kit","Prdm9","Dazl","Dmrt1","Mki67"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#both
+FeaturePlot(am25f.testes, features = c("Zbtb16","Uchl1","Sall4","Sohlh1","Kit","Prdm9"))
+DotPlot(am25f.testes, features = c("Zbtb16","Uchl1","Sall4","Sohlh1","Kit","Prdm9"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+#jon genes
+FeaturePlot(am25f.testes, features = c("Lin28","Sall4","Stra8","Sox3"))
+DotPlot(am25f.testes, features = c("Lin28","Sall4","Stra8","Sox3"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+#solo
+FeaturePlot(am25f.testes, features = c("Sox3"))
+DotPlot(am25f.testes, features = c("Prdm9"), cols = c("blue", "red"), 
+        dot.scale = 8) + RotatedAxis()
+
+
+jgenes <- c("Sox3")
+
+j <- DotPlot(object = am25f.testes, features = jgenes)
+
+j$data
