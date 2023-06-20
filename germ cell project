@@ -1,3 +1,6 @@
+#used this code to label clusters more and isolate cells that were positive for just one gene
+
+
 #umap
 DimPlot(am25f.testes, reduction = "umap")
 
